@@ -317,7 +317,9 @@ Producer → Queue → Workers(N)
 ## 8.1 环境安装
 
 ```bash
-pip install aiohttp
+git clone https://github.com/Michael-TopKing/Webshell-Checker-V2.git
+cd Webshell-Checker-V2
+pip3 install -r requirements.txt
 ```
 
 
