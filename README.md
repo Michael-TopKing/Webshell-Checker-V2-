@@ -1,7 +1,3 @@
-下面是对该 **Webshell Detector v6.5（异步高并发检测工具）** 的安全研究与工具分析（适合写 README / 技术文档）。
-
----
-
 # 1. 工具用途（安全领域作用）
 
 这个脚本本质上是一个 **Webshell 自动化检测与风险扫描工具**，用于在大量 URL 路径中识别可能存在的 Webshell（网页后门）。
@@ -24,13 +20,11 @@
 * 批量站点安全巡检
 * Bug bounty 自动化辅助工具
 
----
 
 # 2. 工作流程（输入 → 输出）
 
 ## 整体流程：
 
-```
 目录文件 + 字典文件
         ↓
 生成 URL 队列 (directory × filename)
@@ -50,7 +44,6 @@ GET 请求获取页面
 命中则写入结果文件 + 打印日志
 ```
 
----
 
 ## 请求处理流程：
 
@@ -63,7 +56,6 @@ GET 请求获取页面
 7. 规则引擎评分
 8. 输出结果
 
----
 
 # 3. 关键模块解析
 
@@ -79,7 +71,6 @@ GET 请求获取页面
 * 多协程消费任务
 * 调用 `check_url()`
 
----
 
 ## 3.2 请求模块（aiohttp）
 
@@ -95,7 +86,6 @@ GET 请求获取页面
 * keepalive 复用连接
 * SSL 校验关闭（用于渗透场景）
 
----
 
 ## 3.3 过滤模块（减少误报）
 
@@ -115,7 +105,6 @@ cloudflare / captcha / access denied
 * MD5 hash 统计
 * 同一 host 重复错误页过滤
 
----
 
 ## 3.4 规则引擎（核心）
 
@@ -131,7 +120,6 @@ wso, b374k, c99, r57 ...
 score = 100, CRITICAL
 ```
 
----
 
 ### ② 危险函数检测（regex）
 
@@ -144,7 +132,6 @@ score = 100, CRITICAL
 * base64_decode()
 * gzinflate()
 
----
 
 ### ③ UI 特征识别
 
@@ -161,7 +148,6 @@ score = 100, CRITICAL
 <?php + 多危险函数 => score × 1.6
 ```
 
----
 
 ## 3.5 自适应并发系统（重点）
 
@@ -179,7 +165,6 @@ score = 100, CRITICAL
 * 每 8 秒调整一次
 * stats 自动清空
 
----
 
 ## 3.6 评分系统
 
@@ -198,7 +183,6 @@ score = 100, CRITICAL
 * PHP context：+12
 * 多函数组合加权（乘数）
 
----
 
 # 4. 命令行参数说明（argparse）
 
@@ -235,7 +219,6 @@ cmd.php
 upload.php
 ```
 
----
 
 ## 实际扫描 URL：
 
@@ -246,7 +229,6 @@ upload.php
 ...
 ```
 
----
 
 ## 输出：
 
@@ -254,7 +236,6 @@ upload.php
 http://target.com/admin/shell.php|score=92|risk=CRITICAL|title=WSO 2.5 Shell
 ```
 
----
 
 # 6. 并发与性能机制
 
@@ -263,7 +244,6 @@ http://target.com/admin/shell.php|score=92|risk=CRITICAL|title=WSO 2.5 Shell
 * asyncio + aiohttp
 * queue 控制任务流
 
----
 
 ## 6.2 并发模型
 
@@ -271,14 +251,12 @@ http://target.com/admin/shell.php|score=92|risk=CRITICAL|title=WSO 2.5 Shell
 Producer → Queue → Workers(N)
 ```
 
----
 
 ## 6.3 限流机制
 
 * 全局 semaphore（global_limit）
 * host 级 semaphore（防单域过载）
 
----
 
 ## 6.4 HTTP 优化
 
@@ -286,8 +264,6 @@ Producer → Queue → Workers(N)
 * keep-alive
 * DNS cache
 * HEAD precheck
-
----
 
 ## 6.5 自适应控制
 
@@ -297,7 +273,6 @@ Producer → Queue → Workers(N)
 * 自动降低攻击强度
 * 自动恢复性能
 
----
 
 # 7. 风险提示（非常重要）
 
@@ -318,7 +293,6 @@ Producer → Queue → Workers(N)
 * Java / ASP / JSP 后门
 * 无 PHP 特征 shell
 
----
 
 ## 7.3 滥用风险（Dual-use）
 
@@ -330,7 +304,6 @@ Producer → Queue → Workers(N)
 
 👉 在很多司法辖区可能违法
 
----
 
 ## 7.4 性能风险
 
@@ -338,7 +311,6 @@ Producer → Queue → Workers(N)
 * 超高并发可能触发封 IP
 * aiohttp session 未限严格 rate control
 
----
 
 # 8. 如何部署和使用（步骤）
 
@@ -348,7 +320,6 @@ Producer → Queue → Workers(N)
 pip install aiohttp
 ```
 
----
 
 ## 8.2 准备文件
 
@@ -364,7 +335,6 @@ directories.txt
 dict.txt
 ```
 
----
 
 ## 8.3 运行工具
 
@@ -386,7 +356,6 @@ python3 detector.py \
 cat result.txt
 ```
 
----
 
 ## 8.5 日志
 
@@ -400,20 +369,4 @@ webshell_detector.log
 * 状态码统计
 * worker error
 
----
 
-# 总结（一句话）
-
-这个工具是一个 **高并发 + 自适应 + 规则引擎驱动的 Webshell 扫描器**，结合 HTTP 指纹识别与行为评分系统，实现对大规模 URL 的快速风险检测。
-
----
-
-如果你需要，我可以帮你再升级一版 README，例如：
-
-* ✔ 改成“专业开源项目 README”
-* ✔ 加架构图（Mermaid）
-* ✔ 加 Docker 部署
-* ✔ 加性能 benchmark
-* ✔ 改成企业级扫描框架结构
-
-只要说一声。
